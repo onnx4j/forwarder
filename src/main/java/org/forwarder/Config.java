@@ -7,12 +7,15 @@ import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.forwarder.executor.Executor;
 import org.onnx4j.Tensor;
 import org.onnx4j.Tensor.AllocationMode;
 
 public class Config {
 
 	//protected DataFormat dataFormat = DataFormat.NCHW;
+
+	protected Executor<?> executor = null;
 
 	protected ByteOrder memoryByteOrder = ByteOrder.nativeOrder();
 
@@ -43,6 +46,10 @@ public class Config {
 				.setAllocationMode(this.memoryAllocationMode)
 				.setByteOrder(this.memoryByteOrder);
 	}
+	
+	public Executor<?> getExecutor() {
+		return this.executor;
+	}
 
 	public boolean isDebug() {
 		return isDebug;
@@ -65,6 +72,8 @@ public class Config {
 		private static final String KEY_DEBUG = "debug";
 		
 		//private static final String KEY_DATA_FORMAT = "data_format";
+		
+		private static final String KEY_EXECUTOR = "executor";
 		
 		private static final String KEY_MEMORY_ALLOCATION_TYPE = "memory_allocation_type";
 		
@@ -98,6 +107,11 @@ public class Config {
 			this.config.dataFormat = dataFormat;
 			return this;
 		}*/
+		
+		public Builder setExecutor(Executor<?> executor) {
+			this.config.executor = executor;
+			return this;
+		}
 		
 		public Builder setMemoryAllocationMode(AllocationMode memoryAllocationMode) {
 			this.config.memoryAllocationMode = memoryAllocationMode;

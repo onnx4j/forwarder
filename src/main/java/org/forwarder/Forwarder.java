@@ -7,9 +7,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.naming.OperationNotSupportedException;
+
 import org.forwarder.backend.BackendFactory;
 import org.forwarder.backend.BackendLoader;
+import org.forwarder.executor.Executor;
+import org.forwarder.executor.ExecutorFactory;
 import org.forwarder.opset.OperatorSetLoader;
+import org.onnx4j.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +29,7 @@ public class Forwarder implements AutoCloseable {
 
 	private Config config;
 	private Model model;
+	private Executor<?> executor;
 	private Map<String, Backend<?>> backends = new HashMap<String, Backend<?>>();
 
 	private Forwarder(Config config) {
@@ -39,16 +45,25 @@ public class Forwarder implements AutoCloseable {
 		return this;
 	}
 
-	public Backend<?> backend(String name) throws NoSuchMethodException, SecurityException,
-			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public Backend<?> backend(String name) throws NoSuchMethodException, SecurityException, InstantiationException,
+			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if (this.backends.containsKey(name)) {
 			return this.backends.get(name);
 		} else {
-			Backend<?> backend = BackendFactory.createInstance(name, this.model);
+			Backend<?> backend = BackendFactory.createInstance(name, this.model, this.executor);
 			assert backend != null;
 			this.backends.put(name, backend);
 			return backend;
 		}
+	}
+
+	public Forwarder executor(String name) throws OperationNotSupportedException {
+		this.executor = ExecutorFactory.createInstance(model, name);
+		return this;
+	}
+
+	public Executor<?> getExecutor() {
+		return this.executor;
 	}
 
 	public Config getConfig() {
@@ -66,7 +81,7 @@ public class Forwarder implements AutoCloseable {
 
 			logger.debug("Backend named {} has been closed", backend.getKey());
 		}
-		
+
 		this.model.close();
 	}
 

@@ -4,11 +4,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.forwarder.Backend;
-import org.forwarder.Model;
+import org.forwarder.executor.Executor;
+import org.onnx4j.Model;
 
 public class BackendFactory {
 
-	public static Backend createInstance(String backendName, Model model)
+	public static Backend<?> createInstance(String backendName, Model model, Executor<?> executor)
 			throws NoSuchMethodException, SecurityException,
 			InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException {
@@ -19,10 +20,10 @@ public class BackendFactory {
 					"Backend named \"%s\" not found.", backendName));
 
 		Constructor<? extends Backend> constructorOfBackend = classOfBackend
-				.getConstructor(Model.class);
+				.getConstructor(Model.class, Executor.class);
 		assert constructorOfBackend != null;
 
-		return constructorOfBackend.newInstance(model);
+		return constructorOfBackend.newInstance(model, executor);
 	}
 
 }

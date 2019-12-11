@@ -1,47 +1,48 @@
-package org.forwarder.executors;
+package org.forwarder.executor.impls;
 
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Map;
 
 import javax.naming.OperationNotSupportedException;
 
-import org.forwarder.Executor;
+import org.forwarder.Session;
+import org.forwarder.executor.Executor;
 import org.onnx4j.Inputs;
+import org.onnx4j.Inputs.Input;
 import org.onnx4j.Model;
 import org.onnx4j.Outputs;
-import org.onnx4j.Inputs.Input;
 import org.onnx4j.Outputs.Output;
 import org.onnx4j.model.Graph;
 import org.onnx4j.model.graph.Node;
 import org.onnx4j.model.graph.exchanges.GraphOutput;
+import org.onnx4j.opsets.OperatorSets;
 
-public class RayExecutor extends Executor {
-	
+public class RayExecutor<T_BK_TS> extends Executor<T_BK_TS> {
+
 	private Collection<Node> orderedSequenceNodes;
 
 	public RayExecutor(Model model) {
+		super(model);
 		this.orderedSequenceNodes = this.toOrderedSequenceNodes(model.getGraph());
 	}
-	
+
 	@Override
-	public void execute() throws OperationNotSupportedException {
+	public void execute(Session<T_BK_TS> session, OperatorSets opsets) throws OperationNotSupportedException {
 		for (Node node : this.orderedSequenceNodes) {
-			this.handle(node);
+			this.handle(session, opsets, node);
 		}
-		//Map<String, T_BK_TS> resourceCache;
-		//return null;
 	}
-	
-	private void handle(Node node) throws OperationNotSupportedException {
+
+	private void handle(Session<T_BK_TS> session, OperatorSets opsets, Node node)
+			throws OperationNotSupportedException {
 		Inputs inputs = new Inputs();
 		for (String inputName : node.getInputNames()) {
-			Input input = Input.wrap(inputName, node, this.resourceCache.get(inputName));
+			Input input = Input.wrap(inputName, node, session.getResourceCache(inputName));
 			inputs.append(input);
 		}
-		Outputs outputs = backend.handle(node, inputs);
+		Outputs outputs = super.handle(session, opsets, node, inputs);
 		for (Output output : outputs.get()) {
-			this.resourceCache.put(output.getName(), output.getTensor());
+			session.putResourceCache(output.getName(), output.getTensor());
 		}
 	}
 

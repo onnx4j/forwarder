@@ -1,13 +1,13 @@
 package org.forwarder;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.forwarder.executor.Executor;
 import org.forwarder.opset.OperatorSetRegistry;
 import org.onnx4j.Inputs;
+import org.onnx4j.Model;
 import org.onnx4j.Outputs;
 import org.onnx4j.Tensor;
 import org.onnx4j.model.graph.Constant;
@@ -20,21 +20,27 @@ import org.onnx4j.opsets.OperatorSets;
 public abstract class Backend<T_TS> implements AutoCloseable {
 
 	private Model model;
+	private Executor<T_TS> executor;
 	private OperatorSets opsets;
-	private Map<String, T_TS> resourceCache = new HashMap<String, T_TS>();
+	private Resource<T_TS> resourceCache = new Resource<T_TS>();
 
 	public Backend() {
 	}
 
-	public Backend(Model model) {
-		this(model.getOpsetIds());
+	public Backend(Model model, Executor<T_TS> executor) {
+		this(model.getOpsetIds(), executor);
 		this.model = model;
 
-		this.resourceCache.putAll(this.initConstants(this.model.getGraph().getConstants()));
+		this.resourceCache.merge(this.initConstants(this.model.getGraph().getConstants()));
 	}
 
-	public Backend(OperatorSetId[] opsetIds) {
+	public Backend(OperatorSetId[] opsetIds, Executor<T_TS> executor) {
 		this.opsets = this.getOpsets(opsetIds);
+		this.executor = executor;
+	}
+
+	public Executor<T_TS> getExecutor() {
+		return this.executor;
 	}
 
 	public Outputs handle(Node node, Inputs inputs) throws OperationNotSupportedException {
@@ -50,7 +56,7 @@ public abstract class Backend<T_TS> implements AutoCloseable {
 		return model;
 	}
 
-	public Map<String, T_TS> getResourceCache() {
+	public Resource<T_TS> getResourceCache() {
 		return resourceCache;
 	}
 
@@ -59,6 +65,10 @@ public abstract class Backend<T_TS> implements AutoCloseable {
 		for (Entry<String, T_TS> entryset : resourceCache.entrySet()) {
 			this.disposeBackendTensor(entryset.getValue());
 		}
+	}
+
+	public OperatorSets getOpsets() {
+		return this.opsets;
 	}
 
 	protected OperatorSets getOpsets(OperatorSetId[] opsetIds) {
@@ -72,8 +82,8 @@ public abstract class Backend<T_TS> implements AutoCloseable {
 		return OperatorSets.wrap(opsets);
 	}
 
-	private Map<String, T_TS> initConstants(Constant[] contants) {
-		Map<String, T_TS> constantResources = new HashMap<String, T_TS>();
+	private Resource<T_TS> initConstants(Constant[] contants) {
+		Resource<T_TS> constantResources = new Resource<T_TS>();
 		for (Constant constant : contants) {
 			constantResources.put(constant.getName(), this.toBackendTensor(constant.getTensor()));
 		}
