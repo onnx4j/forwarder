@@ -19,7 +19,87 @@ Forwarder专注于服务端和嵌入式设备端的模型部署与执行。目�
 ### 担心的问题
 看到这个项目时，或许你最担心的是Forwarder的执行性能问题。这个也是作者在开始是最担心的一个问题，毕竟考虑到人工智能/神经网络的程序属于计算密集型，一般地都是以C/C++作为主要的开发语言，虚拟机好像并不适合处理这个艰巨的问题。非常坦诚地说，使用Java在这一领域进行开发，几乎能难达到C/C++的运行性能，如果你介意这点请无视此项目。
 
-然而，作者认为Java是一个非常优秀的语言，有这非常成熟的生态圈，非常适合开发达到工业级的应用程序。而在处理forward/inference操作时，由于涉及JNI的调用，性能损耗是免不了的。但我们可以在最大程度上减少JNI的交互调用，并且降低JVM的堆内内存与堆外内存的拷贝情况，以保证整体性的损耗在可控范围内。在此基础上，在结合Java成熟的生态圈，保证所交付的程序稳定性与易维护性。
+然而，作者认为Java是一个非常优秀的语言，有着非常成熟的生态圈，非常适合开发达到工业级的应用程序。而在处理forward/inference操作时，由于涉及JNI的调用，性能损耗是免不了的。但我们可以在最大程度上减少JNI的交互调用，并且降低JVM的堆内内存与堆外内存的拷贝情况，以保证整体性的损耗在可控范围内。在此基础上，在结合Java成熟的生态圈，保证所交付的程序稳定性与易维护性。
 
-在不久的将来，作者相信计算性能将不会是这一领域开发时面临的最主要问题，就如同我们站此时回望80-90年一样。而开发的高效性与可靠性等更多工程化的考虑，将会慢慢转变为主要矛盾。
- 
+## 使用
+### 运行要求
+* Linux/MacOS/Windows
+* Maven
+* Oracle JRE 1.8
+* 符合ONNX规范的模型文件（当前最高支持v9的指令集）
+### 快速开始
+开发者可根据需要使用Forwarder的Backend扩展机制自行实现运算负载，但为了展示如何快速开始使用Forwarder，开发者可以从我们提供的[forwarder.backend.tensorflow](https://github.com/onnx4j/forwarder.backend.tensorflow)或[forwarder.backend.dl4j](https://github.com/onnx4j/forwarder.backend.dl4j)中选择其中一个或多个Backend作为运算负载。
+
+* 导入Maven依赖包
+```
+<!-- 使用基于Google Tensorflow的Forwarder Backend -->
+<dependency>
+  <groupId>org</groupId>
+  <artifactId>forwarder.backend.tensorflow</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+</dependency>
+
+<!-- 使用基于Deeplearning4j的Forwarder Backend -->
+<dependency>
+  <groupId>org</groupId>
+  <artifactId>forwarder.backend.dl4j</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+* 加载与执行ONNX模型
+```
+String modelPath = "./model.onnx";
+
+Forwarder f = Forwarder
+  .config(
+    Config.builder()
+    .setDebug(true)
+    .setMemoryByteOrder(ByteOrder.LITTLE_ENDIAN) // 内存存储顺序
+    .setMemoryAllocationMode(AllocationMode.DIRECT) // 使用off-heap内存
+    .build()
+  )
+  .load(modelPath)
+  .executor("ray") // recursion:递归式图遍历执行器，ray:非递归式图遍历执行器
+
+// 选择使用Tensorflow作为运算Backend
+Backend<?> tfBackend = f.backend("Tensorflow");
+try (Session<?> session = tfBackend.newSession()) {
+  Tensor x2_0 = Tensor
+    .builder(
+      DataType.FLOAT, 
+      Shape.create(2L, 1L), 
+      Tensor.options()
+    )
+    .putFloat(3f)
+    .putFloat(2f)
+    .build();
+  Tensor y0 = session.feed("x2:0", x2_0).forward().getOutput("y:0");
+  System.out.println(y0.toString());
+}
+
+// 选择使用Deeplearning4J作为运算Backend
+Backend<?> dl4jBackend = f.backend("DL4J");
+try (Session<?> session = dl4jBackend.newSession()) {
+  Tensor x2_0 = Tensor
+    .builder(
+      DataType.FLOAT, 
+      Shape.create(2L, 1L), 
+      Tensor.options()
+    )
+    .putFloat(3f)
+    .putFloat(2f)
+    .build();
+  Tensor y0 = session.feed("x2:0", x2_0).forward().getOutput("y:0");
+  System.out.println(y0.toString());
+}
+```
+
+## 更多
+### 项目路线图
+* 实现对ONNX规范的所有指令集的支持
+* 提供动态剪枝与精度缩减等模型运行时优化策略
+* 更好地运行于服务器端与端设备的两种常见下的模型forward
+### 联系我们
+HarryLee
+EMAIL: ineharrymicro@21cn.com
