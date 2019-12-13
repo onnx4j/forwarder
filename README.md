@@ -46,6 +46,7 @@ Forwarder专注于服务端和嵌入式设备端的模型部署与执行。目�
   <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
+> 备注：由于当前项目还没有上传至Maven中心仓库，请开发者先自行浏览我们的github，checkout所有必须的项目。
 
 * 加载与执行ONNX模型
 ```
