@@ -116,7 +116,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.</groupId>
+			<groupId>org.onnx4j</groupId>
 			<artifactId>onnx4j</artifactId>
 			<version>0.0.1</version>
 		</dependency>
