@@ -16,10 +16,14 @@ Forwarder并不执行具体的Operator（如：Conv、Lstm、ArgMax、MatMul等�
 
 Forwarder专注于服务端和嵌入式设备端的模型部署与执行。目标是要解决，从模型训练完成后到模型提供服务这个环节中存在一系列问题。我们对用户使用何种神经网络框架进行模型的设计和如何进行模型的训练并无入侵性也并不做限制，只要该输出的模型能通过ONNX转换器转换为符合ONNX标准的模型即可使用Forwarder执行forward操作。
 
-### 担心的问题
-看到这个项目时，或许你最担心的是Forwarder的执行性能问题。这个也是作者在开始是最担心的一个问题，毕竟考虑到人工智能/神经网络的程序属于计算密集型，一般地都是以C/C++作为主要的开发语言，虚拟机好像并不适合处理这个艰巨的问题。非常坦诚地说，使用Java在这一领域进行开发，几乎能难达到C/C++的运行性能，如果你介意这点请无视此项目。
+假如，你正在寻找如何将训练好的模型部署为WEB形式并提供服务，那么你可以尝试使用Forwarder结合Spring Boot来解决这一问题。
 
-然而，作者认为Java是一个非常优秀的语言，有着非常成熟的生态圈，非常适合开发达到工业级的应用程序。而在处理forward/inference操作时，由于涉及JNI的调用，性能损耗是免不了的。但我们可以在最大程度上减少JNI的交互调用，并且降低JVM的堆内内存与堆外内存的拷贝情况，以保证整体性的损耗在可控范围内。在此基础上，在结合Java成熟的生态圈，保证所交付的程序稳定性与易维护性。
+### 担心的问题
+你或许会对Forwarder的执行性能问题产生担忧。诚然，这也是作者在项目开始前一直思考的问题。毕竟考虑到人工智能/神经网络的程序属于计算密集型，一般都是以C/C++作为主要的开发语言，运行在JVM虚拟机上的程序好像并不适合处理这个艰巨的问题。所以，我们非常负责任地回答，使用Java在这一领域进行开发，几乎能难达到C/C++的运行性能，如果你介意这点请忽略此项目。
+
+从另一方面来说，作者认为Java是一个非常优秀的语言，有着非常成熟的生态圈，非常适合开发达到工业级的应用程序。在使用Java处理forward/inference操作时，由于涉及JNI的调用，性能损耗是免不了的。但我们可以在最大程度上减少JNI的交互调用，并且降低JVM的堆内内存与堆外内存的拷贝情况，以保证整体性的损耗在可控范围内。在此基础上，在结合Java成熟的开发套件和生态圈，保证所交付的程序稳定性与易维护性。
+
+我们会在后面补充一些关于性能比较的图例，让对此项目有兴趣的朋友们能更好地评估是否在项目中使用Forwarder。
 
 ## 使用
 ### 运行要求
@@ -43,10 +47,10 @@ Forwarder专注于服务端和嵌入式设备端的模型部署与执行。目�
 <dependency>
   <groupId>org</groupId>
   <artifactId>forwarder.backend.dl4j</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
 </dependency>
 ```
-> 备注：由于当前项目还没有上传至Maven中心仓库，请开发者先自行浏览我们的github，checkout所有必须的项目。
+> 备注：由于forwarder.backend.tensorflow和forwarder.backend.dl4j项目还没有上传至Maven中心仓库，请开发者先自行浏览我们的github，checkout所有必须的项目。
 
 * 加载与执行ONNX模型
 ```
@@ -61,7 +65,7 @@ Forwarder f = Forwarder
     .build()
   )
   .load(modelPath)
-  .executor("ray") // recursion:递归式图遍历执行器，ray:非递归式图遍历执行器
+  .executor(RayExecutor.class) // RecursionExecutor.class:递归式图遍历执行器，RayExecutor:非递归式图遍历执行器
 
 // 选择使用Tensorflow作为运算Backend
 Backend<?> tfBackend = f.backend("Tensorflow");
