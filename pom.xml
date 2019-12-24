@@ -2,18 +2,106 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org</groupId>
+	<groupId>org.onnx4j</groupId>
 	<artifactId>forwarder</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
-	<name>forwarder</name>
-	<url>http://maven.apache.org</url>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>Forwarder is the Java framework which bases on the standard of ONNX (open neural network exchange), focusing on forward/inference of neural network.</description>
+	<url>https://github.com/onnx4j/forwarder</url>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.8</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
 	</properties>
+
+	<profiles>
+		<profile>
+			<id>ossrh</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>2.2.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.9.1</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.5</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<distributionManagement>
+				<snapshotRepository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+				</snapshotRepository>
+				<repository>
+					<id>ossrh</id>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+	</profiles>
+
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>scm:git:git://github.com/onnx4j/forwarder.git</connection>
+		<developerConnection>scm:git:ssh://github.com/onnx4j/forwarder.git</developerConnection>
+		<url>https://github.com/onnx4j/forwarder</url>
+	</scm>
+
+	<developers>
+		<developer>
+			<name>Formaten</name>
+			<email>formaten@qq.com</email>
+			<url>https://github.com/onnx4j</url>
+		</developer>
+	</developers>
 
 	<dependencies>
 		<dependency>
@@ -28,7 +116,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org</groupId>
+			<groupId>org.</groupId>
 			<artifactId>onnx4j</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
