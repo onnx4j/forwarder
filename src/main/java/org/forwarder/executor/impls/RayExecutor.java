@@ -53,12 +53,12 @@ public class RayExecutor<T_BK_TS> extends Executor<T_BK_TS> {
 			throws OperationNotSupportedException {
 		Inputs inputs = new Inputs();
 		for (String inputName : node.getInputNames()) {
-			Input input = Input.wrap(inputName, node, session.getResourceCache(inputName));
+			Input input = Input.wrap(inputName, node, session.getIntermediateOutput(inputName));
 			inputs.append(input);
 		}
 		Outputs outputs = super.handle(session, opsets, node, inputs);
 		for (Output output : outputs.get()) {
-			session.putResourceCache(output.getName(), output.getTensor());
+			session.putIntermediateOutput(output.getName(), output.getTensor());
 		}
 	}
 

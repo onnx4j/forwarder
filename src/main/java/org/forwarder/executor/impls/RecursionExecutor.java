@@ -48,20 +48,20 @@ public class RecursionExecutor<T_BK_TS> extends Executor<T_BK_TS> {
 			throws OperationNotSupportedException {
 		Inputs inputs = new Inputs();
 		for (String inputName : node.getInputNames()) {
-			T_BK_TS inputTensor = session.getResourceCache(inputName);
+			T_BK_TS inputTensor = session.getIntermediateOutput(inputName);
 			if (inputTensor == null) {
 				Collection<Node> predecessors = super.model.getGraph().predecessors(node);
 				for (Node predecessor : predecessors) {
 					this.handle(session, opsets, predecessor);
 				}
-				inputTensor = session.getResourceCache(inputName);
+				inputTensor = session.getIntermediateOutput(inputName);
 			}
 			Input input = Input.wrap(inputName, node, inputTensor);
 			inputs.append(input);
 		}
 		Outputs outputs = super.handle(session, opsets, node, inputs);
 		for (Output output : outputs.get()) {
-			session.putResourceCache(output.getName(), output.getTensor());
+			session.putIntermediateOutput(output.getName(), output.getTensor());
 		}
 	}
 
