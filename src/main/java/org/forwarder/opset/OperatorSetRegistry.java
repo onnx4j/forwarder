@@ -16,13 +16,15 @@
  */
 package org.forwarder.opset;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.onnx4j.opsets.OperatorSet;
-import org.onnx4j.opsets.OperatorSetId;
+import org.onnx4j.opsets.operator.OperatorSetId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,14 @@ public enum OperatorSetRegistry {
 		} else {
 			throw new ConcurrentModificationException("OperatorSet register conflict.");
 		}
+	}
+
+	public Collection<OperatorSet> get(String backendName) {
+		Map<String, OperatorSet> opsets = this.opsetsGroupByBackend.get(backendName);
+		if (opsets != null)
+			return Collections.unmodifiableCollection(opsets.values());
+		else
+			return null;
 	}
 
 	public OperatorSet get(String backendName, OperatorSetId opsetId) {

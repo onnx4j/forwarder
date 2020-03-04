@@ -16,9 +16,8 @@
  */
 package org.forwarder.executor;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.forwarder.Session;
+import org.forwarder.opset.operator.Executable;
 import org.onnx4j.Inputs;
 import org.onnx4j.Model;
 import org.onnx4j.Outputs;
@@ -35,16 +34,16 @@ public abstract class Executor<T_BK_TS> {
 		this.model = model;
 	}
 
-	public abstract void execute(Session<T_BK_TS> session, OperatorSets opsets) throws OperationNotSupportedException;
+	public abstract void execute(Session<T_BK_TS> session, OperatorSets opsets);
 
-	public Outputs handle(Session<T_BK_TS> session, OperatorSets opsets, Node node, Inputs inputs)
-			throws OperationNotSupportedException {
+	public Outputs handle(Session<T_BK_TS> session, OperatorSets opsets, Node node, Inputs inputs) {
 		Operator op = opsets.getOperator(node.getOpType());
 		if (op == null)
-			throw new OperationNotSupportedException(
+			throw new UnsupportedOperationException(
 					String.format("Op=%s not supported in this backend", node.getOpType()));
 
-		return op.forward(node, inputs);
+		Executable<T_BK_TS> execOp = Executable.class.cast(op);
+		return execOp.forward(node, inputs).toOutputs(node);
 	}
 
 }

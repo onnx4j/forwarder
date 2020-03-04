@@ -19,8 +19,6 @@ package org.forwarder.executor.impls;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.forwarder.Session;
 import org.forwarder.executor.Executor;
 import org.onnx4j.Inputs;
@@ -43,14 +41,13 @@ public class RayExecutor<T_BK_TS> extends Executor<T_BK_TS> {
 	}
 
 	@Override
-	public void execute(Session<T_BK_TS> session, OperatorSets opsets) throws OperationNotSupportedException {
+	public void execute(Session<T_BK_TS> session, OperatorSets opsets) {
 		for (Node node : this.orderedSequenceNodes) {
 			this.handle(session, opsets, node);
 		}
 	}
 
-	private void handle(Session<T_BK_TS> session, OperatorSets opsets, Node node)
-			throws OperationNotSupportedException {
+	private void handle(Session<T_BK_TS> session, OperatorSets opsets, Node node) {
 		Inputs inputs = new Inputs();
 		for (String inputName : node.getInputNames()) {
 			Input input = Input.wrap(inputName, node, session.getIntermediateOutput(inputName));

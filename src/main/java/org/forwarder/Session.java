@@ -19,8 +19,6 @@ package org.forwarder;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.forwarder.executor.Executor;
 import org.onnx4j.Outputs;
 import org.onnx4j.Outputs.Output;
@@ -37,20 +35,20 @@ public abstract class Session<T_BK_TS> implements AutoCloseable {
 
 	private static Logger logger = LoggerFactory.getLogger(Session.class);
 
-	protected Executor<T_BK_TS> executor;
+	// protected Executor<T_BK_TS> executor;
 	protected Backend<T_BK_TS> backend;
 	protected Outputs outputs;
 	protected Map<String, T_BK_TS> intermediateOutputs;
 	protected TensorManager<T_BK_TS> intermediateTensorManager;
 	protected TensorManager<Tensor> exchangeTensorManager;
 
-	public Session(Executor<T_BK_TS> executor, Backend<T_BK_TS> backend) {
+	public Session(Backend<T_BK_TS> backend) {
 		if (Session.TL_SESSION.get() != null)
 			throw new RuntimeException("Session in this thread has been inited");
 
 		Session.TL_SESSION.set(this);
 
-		this.executor = executor;
+		// this.executor = executor;
 		this.backend = backend;
 		this.intermediateOutputs = new HashMap<String, T_BK_TS>();
 		this.outputs = new Outputs();
@@ -105,7 +103,7 @@ public abstract class Session<T_BK_TS> implements AutoCloseable {
 		T_BK_TS backendTensor = this.backend.toBackendTensor(this.intermediateTensorManager, tensor);
 
 		this.intermediateOutputs.put(name, backendTensor);
-		
+
 		if (autoAttach) {
 			this.exchangeTensorManager.attach(name, tensor);
 		}
@@ -113,13 +111,14 @@ public abstract class Session<T_BK_TS> implements AutoCloseable {
 		return this;
 	}
 
-	public Session<T_BK_TS> forward() throws OperationNotSupportedException {
+	public Session<T_BK_TS> forward() {
 		//
 		// Put all constant resources to session
 		//
 		this.intermediateOutputs.putAll(this.backend.getTensorManager().get());
 
-		this.executor.execute(this, this.backend.getOpsets());
+		Executor<T_BK_TS> executor = this.backend.getModel().getExecutor();
+		executor.execute(this, this.backend.getOpsets());
 
 		for (GraphOutput graphOutput : this.backend.getModel().getGraph().getOutputs()) {
 			T_BK_TS backendTensor = this.intermediateOutputs.get(graphOutput.getName());

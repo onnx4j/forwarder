@@ -14,35 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.forwarder.backend;
+package org.forwarder.exceptions;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.onnx4j.exceptions.ExceptionEnums;
+import org.onnx4j.exceptions.Onnx4jException;
 
-import org.forwarder.Backend;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public abstract class ForwarderException extends Onnx4jException {
 
-@SuppressWarnings("rawtypes")
-public enum BackendRegistry {
-
-	Instance;
+	private static final long serialVersionUID = 5042630625486243811L;
 	
-	private static Logger logger = LoggerFactory.getLogger(BackendRegistry.class);
+	protected ExceptionEnums enums;
 
-	private Map<String, Class<? extends Backend>> backends = new HashMap<String, Class<? extends Backend>>();
-
-	public Class<? extends Backend> get(String backendName) {
-		return this.backends.get(backendName);
+	@Override
+	public String getErrorCode() {
+		return enums.getErrorCode();
 	}
 
-	public void register(Backend<?> backend) {
-		this.backends.put(backend.getName(), backend.getClass());
-		logger.info("Backend named \"{}\" has installed", backend.getName());
+	@Override
+	public String getMessageTemplate() {
+		return enums.getMessageTemplate();
 	}
-	
-	public Map<String, Class<? extends Backend>> get() {
-		return this.backends;
+
+	public ForwarderException(ExceptionEnums exceptionEnum) {
+		this(exceptionEnum, new Object[] {});
+	}
+
+	public ForwarderException(ExceptionEnums exceptionEnum, Object... args) {
+		super(exceptionEnum, args);
 	}
 
 }

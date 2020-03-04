@@ -31,6 +31,7 @@ public enum BackendLoader {
 	
 	private boolean hasInitialized = false;
 
+	@SuppressWarnings("rawtypes")
 	public void initialize() {
 		if (hasInitialized == false) {
 			ServiceLoader<Backend> backends = ServiceLoader.load(Backend.class);
@@ -40,16 +41,16 @@ public enum BackendLoader {
 				logger.warn("No any backends found");
 			} else {
 				for (; it.hasNext();) {
-					Backend backend = it.next();
+					Backend<?> backend = it.next();
 					assert backend != null;
 					BackendRegistry.Instance.register(backend);
 				}
 			}
 			
 			hasInitialized = true;
-			logger.warn("Initialization has done");
+			logger.info("Initialization has done");
 		} else {
-			logger.warn("BackendLoader had initialized");
+			logger.info("BackendLoader had initialized");
 		}
 	}
 }

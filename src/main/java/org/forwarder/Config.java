@@ -24,6 +24,7 @@ import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.forwarder.executor.Executor;
+import org.forwarder.executor.impls.RayExecutor;
 import org.onnx4j.Tensor;
 import org.onnx4j.Tensor.AllocationMode;
 
@@ -31,7 +32,7 @@ public class Config {
 
 	//protected DataFormat dataFormat = DataFormat.NCHW;
 
-	protected Executor<?> executor = null;
+	protected Class<? extends Executor> executor = RayExecutor.class;
 
 	protected ByteOrder memoryByteOrder = ByteOrder.nativeOrder();
 
@@ -63,7 +64,7 @@ public class Config {
 				.setByteOrder(this.memoryByteOrder);
 	}
 	
-	public Executor<?> getExecutor() {
+	public Class<? extends Executor> getExecutor() {
 		return this.executor;
 	}
 
@@ -89,7 +90,7 @@ public class Config {
 		
 		//private static final String KEY_DATA_FORMAT = "data_format";
 		
-		private static final String KEY_EXECUTOR = "executor";
+		//private static final String KEY_EXECUTOR = "executor";
 		
 		private static final String KEY_MEMORY_ALLOCATION_TYPE = "memory_allocation_type";
 		
@@ -124,8 +125,8 @@ public class Config {
 			return this;
 		}*/
 		
-		public Builder setExecutor(Executor<?> executor) {
-			this.config.executor = executor;
+		public Builder setExecutor(Class<? extends Executor> classOfExecutor) {
+			this.config.executor = classOfExecutor;
 			return this;
 		}
 		
@@ -140,6 +141,9 @@ public class Config {
 		}
 
 		public Config build() {
+			if (this.config.getExecutor() == null)
+				throw new IllegalArgumentException("You must specify the class of Executor.");
+			
 			return this.config;
 		}
 

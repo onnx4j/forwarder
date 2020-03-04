@@ -14,35 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.forwarder.backend;
+package org.forwarder.opset.operator;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.onnx4j.opsets.operator.OperatorInputs;
 
-import org.forwarder.Backend;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+public interface Executable<T_TENSOR> extends Forwardable<T_TENSOR>, Backwardable<T_TENSOR> {
 
-@SuppressWarnings("rawtypes")
-public enum BackendRegistry {
+	public void preconditions(OperatorInputs<T_TENSOR> operatorInputs);
 
-	Instance;
-	
-	private static Logger logger = LoggerFactory.getLogger(BackendRegistry.class);
-
-	private Map<String, Class<? extends Backend>> backends = new HashMap<String, Class<? extends Backend>>();
-
-	public Class<? extends Backend> get(String backendName) {
-		return this.backends.get(backendName);
-	}
-
-	public void register(Backend<?> backend) {
-		this.backends.put(backend.getName(), backend.getClass());
-		logger.info("Backend named \"{}\" has installed", backend.getName());
-	}
-	
-	public Map<String, Class<? extends Backend>> get() {
-		return this.backends;
-	}
+	//public OperatorInputs<T_TENSOR> asOperatorInputs(Node node, Inputs inputs);
 
 }

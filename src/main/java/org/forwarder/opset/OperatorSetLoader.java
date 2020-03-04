@@ -34,6 +34,7 @@ public enum OperatorSetLoader {
 
 	private static Logger logger = LoggerFactory.getLogger(OperatorSetLoader.class);
 
+	@SuppressWarnings("rawtypes")
 	public void initialize() {
 		for (Entry<String, Class<? extends Backend>> entrySet : BackendRegistry.Instance.get().entrySet()) {
 			Reflections reflections = new Reflections(entrySet.getValue().getPackage().getName());

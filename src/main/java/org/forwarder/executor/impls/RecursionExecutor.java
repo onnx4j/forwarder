@@ -18,8 +18,6 @@ package org.forwarder.executor.impls;
 
 import java.util.Collection;
 
-import javax.naming.OperationNotSupportedException;
-
 import org.forwarder.Session;
 import org.forwarder.executor.Executor;
 import org.onnx4j.Inputs;
@@ -38,14 +36,13 @@ public class RecursionExecutor<T_BK_TS> extends Executor<T_BK_TS> {
 	}
 
 	@Override
-	public void execute(Session<T_BK_TS> session, OperatorSets opsets) throws OperationNotSupportedException {
+	public void execute(Session<T_BK_TS> session, OperatorSets opsets) {
 		for (GraphOutput graphOutput : super.model.getGraph().getOutputs()) {
 			this.handle(session, opsets, graphOutput.getNode());
 		}
 	}
 
-	private void handle(Session<T_BK_TS> session, OperatorSets opsets, Node node)
-			throws OperationNotSupportedException {
+	private void handle(Session<T_BK_TS> session, OperatorSets opsets, Node node) {
 		Inputs inputs = new Inputs();
 		for (String inputName : node.getInputNames()) {
 			T_BK_TS inputTensor = session.getIntermediateOutput(inputName);
